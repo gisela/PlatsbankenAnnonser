@@ -124,7 +124,9 @@ getAnnonser <- function(doc) {
     print(URLannons)
     annonsXML <- GET(URLannons, add_headers("Accept-Language" = "se-sv,sv"), accept_xml())
     annonsDOM = xmlRoot(xmlTreeParse(annonsXML))
-    row <- c(annonsDOM[[1]][1]$annonsid[1]$text$value, annonsDOM[[1]][2]$annonsrubrik[1]$text$value, annonsDOM[[1]][4]$yrkesbenamning[1]$text$value, annonsDOM[[4]][1]$arbetsplatsnamn[1]$text$value, annonsDOM[[1]][3]$annonstext[1]$text$value )
+    # Platsbanken har uppdaterat något i vad som kommer tillbaka här, så siffror nedan modifierade för att hämta rätt.
+    # row <- c(annonsDOM[[1]][1]$annonsid[1]$text$value, annonsDOM[[1]][2]$annonsrubrik[1]$text$value, annonsDOM[[1]][4]$yrkesbenamning[1]$text$value, annonsDOM[[4]][1]$arbetsplatsnamn[1]$text$value, annonsDOM[[1]][3]$annonstext[1]$text$value )
+    row <- c(annonsDOM[[1]][1]$annonsid[1]$text$value, annonsDOM[[1]][3]$annonsrubrik[1]$text$value, annonsDOM[[1]][5]$yrkesbenamning[1]$text$value, annonsDOM[[4]][1]$arbetsplatsnamn[1]$text$value, annonsDOM[[1]][4]$annonstext[1]$text$value )
     matrix <- rbind(matrix, row)
   }
   return(matrix)
