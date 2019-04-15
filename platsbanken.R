@@ -3,9 +3,9 @@
 
 # install.packages('XML')
 # install.packages('httr')
-
 library('httr')
 library('XML')
+
 
 # Sätt en URL för lista över yrkesområden
 URL <- "http://api.arbetsformedlingen.se/platsannons/soklista/yrkesomraden"
@@ -52,11 +52,12 @@ kontroll <- function(yrkesomradeid=yrkesomradeid) {
   yrkesomrade <- listaYrkesomraden[listaYrkesomraden$yrkesomradeid == yrkesomradeid,]$yrkesomrade
   antal_platsannonser <- listaYrkesomraden[listaYrkesomraden$yrkesomradeid == yrkesomradeid,]$antal_platsannonser
   print(paste0("Du valde yrkesområde: ", yrkesomradeid, " - ", yrkesomrade, ". Antal annonser: ", antal_platsannonser))
-}
+  yrkesinfo <- list(yrkesomrade, yrkesomradeid, antal_platsannonser)
+  return(yrkesinfo)
+ }
 
-# Kör kontrollen
-kontroll(yrkesomradeid)
-
+# Kör kontrollen och skapa yrkesinfo-objektet så det är tillgängligt utanför funktionen
+yrkesinfo <- kontroll(yrkesomradeid)
 
 # Gå vidare med att borra ner i yrken om man vill, har inte utforskat helt
 # yrkesomradeid <- 19 # 19=transport, sätt manuellt om man vill.
@@ -126,18 +127,23 @@ getAnnonser <- function(doc) {
     annonsDOM = xmlRoot(xmlTreeParse(annonsXML))
     # Platsbanken har uppdaterat något i vad som kommer tillbaka här, så siffror nedan modifierade för att hämta rätt.
     # row <- c(annonsDOM[[1]][1]$annonsid[1]$text$value, annonsDOM[[1]][2]$annonsrubrik[1]$text$value, annonsDOM[[1]][4]$yrkesbenamning[1]$text$value, annonsDOM[[4]][1]$arbetsplatsnamn[1]$text$value, annonsDOM[[1]][3]$annonstext[1]$text$value )
-    row <- c(annonsDOM[[1]][1]$annonsid[1]$text$value, annonsDOM[[1]][3]$annonsrubrik[1]$text$value, annonsDOM[[1]][5]$yrkesbenamning[1]$text$value, annonsDOM[[4]][1]$arbetsplatsnamn[1]$text$value, annonsDOM[[1]][4]$annonstext[1]$text$value )
+    # row <- c(annonsDOM[[1]][1]$annonsid[1]$text$value, annonsDOM[[1]][3]$annonsrubrik[1]$text$value, annonsDOM[[1]][5]$yrkesbenamning[1]$text$value, annonsDOM[[4]][1]$arbetsplatsnamn[1]$text$value, annonsDOM[[1]][4]$annonstext[1]$text$value )
+    # 2019 uppdaterar
+    row <- c(annonsDOM[[1]][3]$annonsid[1]$text$value, annonsDOM[[1]][4]$annonsrubrik[1]$text$value, annonsDOM[[1]][11]$yrkesbenamning[1]$text$value, annonsDOM[[4]][1]$arbetsplatsnamn[1]$text$value, annonsDOM[[1]][5]$annonstext[1]$text$value )
     matrix <- rbind(matrix, row)
   }
   return(matrix)
 }
+
 
 # Stoppa in lista med ID i denna funktion, t.ex. ovan totalAnnonsIDlista
 annonser <- getAnnonser(totalAnnonsIDlista)
 
 # Exportera annonser till CSV
 ## Skapa ett filnamn
-filename <- paste0(yrkesomradeid, "-", yrkesomrade, "-", antal_platsannonser, ".csv")
+## filename <- paste0(yrkesomradeid, "-", yrkesomrade, "-", antal_platsannonser, ".csv")
+filename <- paste0(yrkesomradeid, "-", yrkesinfo[1], "-", yrkesinfo[3], ".csv")
+
 
 ## Output to file
 write.csv(na.omit(annonser), filename, row.names=TRUE, na="")
